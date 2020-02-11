@@ -12,6 +12,20 @@ function saveUser(req, res){
         user.email = params.email;
         user.role = 'ROLE_USER';
         user.image = null;
+
+        //Controlar usuarios duplicados
+        User.find({  
+            $or: [
+                {email: user.email.toLowerCase()},
+                {nick: user.nick.toLowerCase()}
+            ]}).exec((err, users) => {
+                if(err) return res.status(500).send({ message: 'Error en la petición de usuarios.'});
+                if(users && users.length >= 1){
+                    return res.status(200).send({message: 'El usuario que intenta registrar ya existe.'});
+                }
+            });
+
+            //Cifra el password y guardar los datos
         bcrypt.hash(params.password, null, null, (err, hash) => {
             user.password = hash;
             user.save((err, userStored) => {

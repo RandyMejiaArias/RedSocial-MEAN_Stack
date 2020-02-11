@@ -11,7 +11,7 @@ mongoose.connect('mongodb://localhost:27017/mean_social', { useNewUrlParser: tru
         console.log("Conexión realizada correctamente.")
         //Crear Servidor
         app.listen(port, () => {
-            console.log("Servidor coriendo en http://localhost:3800");
+            console.log("Servidor corriendo en http://localhost:3800");
         });
     })
     .catch(err => console.log(err));
