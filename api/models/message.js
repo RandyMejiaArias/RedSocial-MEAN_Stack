@@ -1,7 +1,7 @@
 'use strict'
 
 var mongoose = require('mongoose');
-var schema = mongoose.Schema;
+var Schema = mongoose.Schema;
 
 var MessageSchema = Schema({
     emmiter: { type: Schema.ObjectId, ref: 'User'},

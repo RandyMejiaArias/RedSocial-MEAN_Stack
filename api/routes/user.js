@@ -8,7 +8,7 @@ var api = express.Router();
 var md_auth = require('../middlewares/authenticated');
 var md_upload = multipart({uploadDir: './uploads/users'});
 
-api.get('/pruebas', md_auth.ensureAuth, UserController.pruebas);
+api.get('/prueba-user', md_auth.ensureAuth, UserController.pruebas);
 api.post('/register', UserController.saveUser);
 api.post('/login', UserController.loginUser);
 api.get('/user/:id', md_auth.ensureAuth, UserController.getUser);
