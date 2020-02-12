@@ -39,8 +39,39 @@ function deleteFollow(req, res) {
     });
 }
 
+//Lista de usuarios que sigo
+function getFollowingUsers(req, res){
+    var userId = req.user.sub;
+    var page = 1;
+    
+    if(req.params.id && req.params.page){
+        userId = req.params.id;
+    }
+    if(req.params.page){
+        page = req.params.params;
+    }else{
+        page = req.params.id;
+    }
+
+    var itermsPerPage = 4;
+
+    Follow.find({user: userId}).populate({path: 'followed'}).paginate(page, itermsPerPage, (err, follows, total) => {
+        if(err) return res.status(500).send({message: 'Error al mostrar los seguimientos.'});
+        if(!follows) return res.status(404).send({message: 'No sigue a ningún usuario.'});
+        return res.status(200).send({
+            total: total,
+            pages: Math.ceil(total/itermsPerPage),
+            follows
+        });
+    });
+}
+
+//Lista de usuarios que me siguen
+
+
 module.exports = {
     prueba,
     saveFollow,
-    deleteFollow
+    deleteFollow,
+    getFollowingUsers
 }
