@@ -1,8 +1,10 @@
 'use strict'
 var bcrypt = require('bcrypt-nodejs');
+var mongoosePaginate = require('mongoose-pagination');
 var User = require('../models/user');
 var jwt = require('../services/jwt');
 
+//Registro
 function saveUser(req, res){
     var params = req.body;
     var user = new User();
@@ -26,7 +28,7 @@ function saveUser(req, res){
                 }
             });
 
-            //Cifra el password y guardar los datos
+        //Cifra el password y guardar los datos
         bcrypt.hash(params.password, null, null, (err, hash) => {
             user.password = hash;
             user.save((err, userStored) => {
@@ -45,6 +47,7 @@ function saveUser(req, res){
     }
 }
 
+//Login
 function loginUser(req, res){
     var params = req.body;
     var email = params.email;
@@ -61,7 +64,7 @@ function loginUser(req, res){
                         });
                     }else{
                         //Eliminar propiedad password del objeto JS
-                        user.password = undefinded;
+                        user.password = undefined;
                         //Devolver datos de usuario
                         return res.status(200).send({user});
                     }
@@ -76,6 +79,54 @@ function loginUser(req, res){
 
 }
 
+//Conseguir datos de un usuario
+function getUser(req, res){
+    var userId = req.params.id;
+
+    User.findById(userId, (err, user) => {
+        if(err) return res.status(500).send({ message: 'Error en la petición.'});
+        if(!user) return res.status(404).send({ message: 'El usuario no existe.'});
+        return res.status(200).send({user});
+    });
+}
+
+//Devolver un listado de usuarios paginados
+function getUsers(req, res){
+    var identity_user_id = req.user.sub;
+    var page =1;
+    if(req.params.page){
+        page= req.params.params;
+    }
+
+    var itemsPerPage = 5;
+    User.find().sort('_id').paginate(page, itemsPerPage, (err, users, total) => {
+        if(err) return res.status(500).send({ message: 'Error en la petición.'});
+        if(!users) return res.status(404).send({ message: 'No hay usuarios disponibles.'});
+        return res.status(200).send({
+            users,
+            total,
+            pages: Math.ceil(total/itemsPerPage)
+        })
+    });
+}
+
+//Edición de datos de usuario
+function updateUser(req, res){
+    var userId = req.params.id;
+    var update = req.body;
+    //Borrar la propiedad password
+    delete update.password;
+    if(userId != req.user.sub){
+        return res.status(500).send({ message: 'No tienes permiso para actualizar los datos del usuario.'});
+    }
+    User.findByIdAndUpdate(userId, update, {new: true}, (err, userUpdated) => {
+        if(err) return res.status(500).send({ message: 'Error en la petición.'});
+        if(!userUpdated) return res.status(404).send({ message: 'No se ha podido actualizar el usuario.'});
+        return res.status(200).send({user: userUpdated});
+    })
+}
+
+//Método de prueba
 function pruebas(req, res){
     console.log(req.body);
     res.status(200).send({
@@ -86,5 +137,8 @@ function pruebas(req, res){
 module.exports = {
     saveUser, 
     loginUser,
+    getUser,
+    getUsers,
+    updateUser,
     pruebas
 }
