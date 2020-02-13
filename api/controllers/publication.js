@@ -71,9 +71,19 @@ function getPublication(req, res){
     });
 }
 
+//Eliminar una publicación
+function deletePublication(req, res){
+    var publicationId = req.params.id;
+    Publication.find({user: req.user.sub, '_id': publicationId}).remove(err => {
+        if(err) return res.status(500).send({message: 'Error al borrar la publicación.'});
+        return res.status(200).send({publication: 'Publicación eliminada correctamente'});
+    });
+}
+
 module.exports = {
     prueba,
     savePublication,
     getPublications,
-    getPublication
+    getPublication,
+    deletePublication
 }
