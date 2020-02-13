@@ -61,8 +61,19 @@ function getPublications(req, res){
     });
 }
 
+//Devolver una publicación
+function getPublication(req, res){
+    var publicationId = req.params.id;
+    Publication.findById(publicationId, (err, publication) => {
+        if(err) return res.status(500).send({message: 'Error al devolver la publicación.'});
+        if(!publication) return res.status(404).send({message: 'La publicación no existe.'});
+        return res.status(200).send({publication});
+    });
+}
+
 module.exports = {
     prueba,
     savePublication,
-    getPublications
+    getPublications,
+    getPublication
 }
