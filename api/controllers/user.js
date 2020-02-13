@@ -4,6 +4,7 @@ var mongoosePaginate = require('mongoose-pagination');
 var fs = require('fs');
 var path = require('path');
 var User = require('../models/user');
+var Follow = require('../models/follow');
 var jwt = require('../services/jwt');
 
 //Registro
@@ -88,8 +89,32 @@ function getUser(req, res){
     User.findById(userId, (err, user) => {
         if(err) return res.status(500).send({ message: 'Error en la petición.'});
         if(!user) return res.status(404).send({ message: 'El usuario no existe.'});
-        return res.status(200).send({user});
+        followThisUser(req.user.sub, userId).then((value) =>{
+            user.password = undefined;
+            return res.status(200).send({
+                user, 
+                following: value.following,
+                followed: value.followed});
+        });
     });
+}
+
+async function followThisUser(identity_user_id, user_id) {
+    var following = await Follow.findOne({ user: identity_user_id, followed: user_id }).exec().then((following) => {
+        return following;
+    }).catch((err) => {
+        return handleError(err);
+    });
+    
+    var followed = await Follow.findOne({ user: user_id, followed: identity_user_id }).exec().then((followed) => {
+        return followed;
+    }).catch((err) => {
+        return handleError(err);
+    });
+    return {
+        following: following,
+        followed: followed
+    };
 }
 
 //Devolver un listado de usuarios paginados
