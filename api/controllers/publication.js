@@ -16,6 +16,7 @@ function prueba(req, res){
     });
 }
 
+//Guardar publicaciones
 function savePublication(req, res){
     var params = req.body;
     if(!params.text)
@@ -33,7 +34,35 @@ function savePublication(req, res){
     });
 }
 
+//Listar publicaciones de los usuarios que sigo
+function getPublications(req, res){
+    var page = 1;
+    if(req.params.page)
+        page = req.params.page;
+    var itemsPerPage = 4;
+
+    Follow.find({user: req.user.sub}).populate('followed').exec((err, follows) =>{
+        if(err) return res.status(500).send({message: 'Error al devolver el seguimiento.'});
+
+        var follows_clean =[];
+        follows.forEach((follow) =>{
+            follows_clean.push(follow.followed);
+        });
+        Publication.find({user: {"$in" : follows_clean}}).sort('-create_at').populate('user').paginate(page, itemsPerPage, (err, publications, total) =>{
+            if(err) return res.status(500).send({message: 'Error al devolver las publicaciones.'});
+            if(!publications) return res.status(404).send({message: 'No hay publicaciones'});
+            return res.status(200).send({
+                total_items: total,
+                pages: Math.ceil(total/itemsPerPage),
+                page: page,
+                publications
+            });
+        });
+    });
+}
+
 module.exports = {
     prueba,
-    savePublication
+    savePublication,
+    getPublications
 }
