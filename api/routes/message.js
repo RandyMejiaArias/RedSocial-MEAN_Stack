@@ -8,5 +8,6 @@ var md_auth = require('../middlewares/authenticated');
 
 api.get('/prueba-message', md_auth.ensureAuth, MessageController.prueba);
 api.post('/message', md_auth.ensureAuth, MessageController.saveMessage);
+api.get('/my-messages/:page?', md_auth.ensureAuth, MessageController.getReceivedMessages);
 
 module.exports = api;
