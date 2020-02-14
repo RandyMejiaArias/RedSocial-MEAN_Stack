@@ -5,6 +5,7 @@ var fs = require('fs');
 var path = require('path');
 var User = require('../models/user');
 var Follow = require('../models/follow');
+var Publication = require('../models/publication');
 var jwt = require('../services/jwt');
 
 //Registro
@@ -190,9 +191,16 @@ async function getCountFollow(user_id){
         return handleError(err);
     });
 
+    var publications = await Publication.count({user: user_id}).exec().then((count) => {
+        return count;
+    }).catch((err) =>{
+        return handleError(err);
+    });
+
     return {
         following: following,
-        followed: followed
+        followed: followed,
+        publications: publications
     }
 }
 
