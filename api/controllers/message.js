@@ -85,11 +85,24 @@ function getUnviewedMessages(req, res){
     });
 }
 
+//Marcar mensajes como leídos
+function setViewedMessages(req, res){
+    var userId = req.user.sub;
+
+    Message.update({receiver: userId, viewed: 'false'}, {viewed: 'true'}, {"multi": true}, (err, messagesUpdated) =>{
+        if(err) return res.status(500).send({message: 'Error en la petición.'});
+        return res.status(200).send({
+            messages: messagesUpdated
+        });
+    });
+}
+
 
 module.exports = {
     prueba,
     saveMessage,
     getReceivedMessages,
     getEmitedMessages,
-    getUnviewedMessages
+    getUnviewedMessages,
+    setViewedMessages
 }
