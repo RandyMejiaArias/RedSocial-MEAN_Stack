@@ -42,7 +42,7 @@ function getReceivedMessages(req, res){
         page = req.params.page;
     var itemsPerPage = 4;
 
-    Message.find({receiver: userId}).populate('emitter').paginate(page, itemsPerPage, (err, messages, total) => {
+    Message.find({receiver: userId}).populate('emitter', 'name surname _id nick image').paginate(page, itemsPerPage, (err, messages, total) => {
         if(err) return res.status(500).send({message: 'Error en la petición.'});
         if(!messages) return res.status(404).send({message: 'Todavía no has recibido mensajes.'});
         return res.status(200).send({
@@ -53,8 +53,29 @@ function getReceivedMessages(req, res){
     });
 }
 
+//Listar mensajes enviados
+function getEmitedMessages(req, res){
+    var userId = req.user.sub;
+    var page = 1;
+    if(req.params.page)
+        page = req.params.page;
+    var itemsPerPage = 4;
+
+    Message.find({emitter: userId}).populate('emitter receiver', 'name surname _id nick image').paginate(page, itemsPerPage, (err, messages, total) => {
+        if(err) return res.status(500).send({message: 'Error en la petición.'});
+        if(!messages) return res.status(404).send({message: 'Todavía no has recibido mensajes.'});
+        return res.status(200).send({
+            total: total,
+            pages: Math.ceil(total/itemsPerPage),
+            messages
+        });
+    });
+}
+
+
 module.exports = {
     prueba,
     saveMessage,
-    getReceivedMessages
+    getReceivedMessages,
+    getEmitedMessages
 }

@@ -86,7 +86,7 @@ function getFollowedUsers(req, res){
 
     var itermsPerPage = 4;
 
-    Follow.find({followed: userId}).populate('user').paginate(page, itermsPerPage, (err, follows, total) => {
+    Follow.find({followed: userId}).populate('user', 'name surname nick image _id').paginate(page, itermsPerPage, (err, follows, total) => {
         if(err) return res.status(500).send({message: 'Error al mostrar los seguidores.'});
         if(!follows) return res.status(404).send({message: 'Todavía no te sigue ningún usuario.'});
         return res.status(200).send({
